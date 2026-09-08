@@ -73,7 +73,11 @@ func main() {
 
 	// Выводим статистику
 	fmt.Println("\n=====СТАТИСТИКА=====")
-	fmt.Printf("Обработано адресов: %d \n", len(urls))
+	fmt.Println("Список обработанных адресов:")
+	for _, url := range resultSlice {
+		fmt.Println(url.URL)
+	}
+	fmt.Printf("Обработано адресов: %d \n", len(resultSlice))
 	fmt.Printf("Количество успешных запросов: %d\n", countSuccess)
 	if len(resultSlice) > 0 {
 		avgTime := totalTime / time.Duration(len(resultSlice))
