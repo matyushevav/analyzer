@@ -29,11 +29,11 @@ func main() {
 		jobsSlice = append(jobsSlice, models.Job{ID: i, URL: url})
 	}
 
-	// Определяем размер буфера каналов
-	bufferSize := len(jobsSlice)
-
 	// Определяем размер пула воркеров
 	workersNum := 5
+
+	// Определяем размер буфера каналов
+	bufferSize := len(jobsSlice)
 
 	// Создаем каналы заданий и результатов
 	jobs := make(chan models.Job, bufferSize)
@@ -47,11 +47,13 @@ func main() {
 		go worker.Worker(jobs, results, &wg)
 	}
 
-	// Отправляем задания в канал задач
-	for _, j := range jobsSlice {
-		jobs <- j
-	}
-	close(jobs)
+	// Отправляем задания в отдельной горутине, чтобы main не блокировался
+	go func() {
+		defer close(jobs)
+		for _, j := range jobsSlice {
+			jobs <- j
+		}
+	}()
 
 	// Дожидаемся окончания работы всех воркеров
 	go func() {

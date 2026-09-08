@@ -7,16 +7,14 @@ import (
 	"time"
 )
 
+var statuses = []int{200, 401, 403, 500}
+
 // MockHTTPRequest имитирует запрос к URL
-func MockHTTPRequest(url string) (time.Duration, int) {
+func MockHTTPRequest(url string) int {
 	delay := time.Duration(rand.Intn(500)+100) * time.Millisecond
 	time.Sleep(delay)
-	// Генерируем случайный статус
-	statuses := []int{200, 401, 403, 500}
-	status := statuses[rand.Intn(len(statuses))]
 
-	return delay, status
-
+	return statuses[rand.Intn(len(statuses))]
 }
 
 // Worker обрабатывает задания из канала
@@ -25,8 +23,12 @@ func Worker(jobs <-chan models.Job, results chan<- models.Result, wg *sync.WaitG
 
 	// Читаем канал jobs
 	for job := range jobs {
-		duration, status := MockHTTPRequest(job.URL)
-		results <- models.Result{JobID: job.ID,
+		start := time.Now()
+		status := MockHTTPRequest(job.URL)
+		duration := time.Since(start)
+
+		results <- models.Result{
+			JobID:    job.ID,
 			URL:      job.URL,
 			Status:   status,
 			Duration: duration,
